@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>먼작귀 캐릭터 룰렛</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-amber-50 text-slate-800 min-h-screen flex flex-col font-sans">
+
+    <!-- Header -->
+    <header class="bg-amber-400 text-amber-950 py-6 shadow-md text-center">
+        <h1 class="text-2xl md:text-3xl font-extrabold">🐰 먼작귀 캐릭터 룰렛 🌟</h1>
+        <p class="text-amber-900 text-sm mt-1">돌릴 때마다 완전히 랜덤으로 캐릭터가 매칭되는 룰렛! [made by. Yoonsung]</p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-3xl mx-auto px-4 py-8 flex-grow w-full space-y-6">
+        
+        <!-- Step 1: 참가자 입력 섹션 -->
+        <div id="setup-section" class="bg-white p-6 md:p-8 rounded-3xl shadow-lg border-2 border-amber-200 space-y-4">
+            <h2 class="text-xl font-bold text-amber-900">1. 참가자 이름을 입력하세요</h2>
+            <div class="flex gap-2">
+                <input type="text" id="participant-input" placeholder="이름 입력" class="flex-grow px-4 py-3 rounded-xl border border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                <button onclick="addParticipant()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 py-3 rounded-xl shadow transition cursor-pointer">추가</button>
+            </div>
+            
+            <!-- 입력된 참가자 리스트 -->
+            <div id="participant-list" class="flex flex-wrap gap-2 pt-2 min-h-[50px] items-center border border-dashed border-amber-200 p-3 rounded-xl bg-amber-50/50">
+                <span class="text-slate-400 text-sm">아직 등록된 참가자가 없습니다.</span>
+            </div>
+
+            <button onclick="startRouletteReady()" id="match-btn" class="w-full mt-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-md transition cursor-pointer opacity-50 cursor-not-allowed" disabled>
+                ✨ 룰렛 시작하기
+            </button>
+        </div>
+
+        <!-- Step 2: 룰렛 돌리기 섹션 -->
+        <div id="roulette-section" class="hidden space-y-6">
+            <div class="bg-white p-8 rounded-3xl shadow-lg border-2 border-amber-200 text-center space-y-6">
+                <h2 class="text-2xl font-extrabold text-amber-900">🎯 운명의 룰렛 돌리기</h2>
+                <p class="text-sm text-slate-500">버튼을 누를 때마다 참가자와 캐릭터가 매번 완전히 랜덤으로 결정됩니다!</p>
+                
+                <!-- 룰렛 시각화 박스 -->
+                <div class="w-64 h-64 mx-auto bg-amber-50 rounded-3xl border-4 border-amber-400 flex flex-col items-center justify-center shadow-inner p-4">
+                    <div id="roulette-display" class="flex flex-col items-center justify-center space-y-2">
+                        <span class="text-5xl">🎁</span>
+                        <span class="text-lg font-black text-amber-900">READY!</span>
+                    </div>
+                </div>
+
+                <button onclick="spinRoulette()" id="spin-btn" class="bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-lg px-10 py-4 rounded-2xl shadow-lg transition transform active:scale-95 cursor-pointer">
+                    🎲 룰렛 START!
+                </button>
+
+                <!-- 당첨 결과 표시 영역 -->
+                <div id="result-display" class="hidden mt-4 p-6 bg-amber-50 rounded-2xl border border-amber-300 animate-bounce space-y-2">
+                    <p class="text-sm text-amber-800 font-semibold">🎉 이번 룰렛 결과 🎉</p>
+                    <div id="winner-box" class="flex items-center justify-center gap-4 mt-2"></div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button onclick="resetApp()" class="text-amber-800 bg-amber-200 hover:bg-amber-300 px-6 py-2.5 rounded-xl font-bold transition cursor-pointer">
+                    🔄 참가자 다시 설정하기
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-amber-100 text-amber-800 py-4 text-center text-xs mt-auto">
+        먼작귀(치이카와) 캐릭터 룰렛 시스템 🐰✨
+    </footer>
+
+    <!-- 로직 스크립트 -->
+    <script>
+        const characters = [
+            {
+                name: "치이카와",
+                bg: "bg-pink-50 border-pink-200 text-pink-700",
+                svg: `<svg viewBox="0 0 100 100" class="w-20 h-20"><ellipse cx="50" cy="55" rx="35" ry="32" fill="#fff" stroke="#333" stroke-width="3"/><ellipse cx="32" cy="28" rx="8" ry="10" fill="#fff" stroke="#333" stroke-width="3"/><ellipse cx="68" cy="28" rx="8" ry="10" fill="#fff" stroke="#333" stroke-width="3"/><circle cx="38" cy="52" r="3.5" fill="#333"/><circle cx="62" cy="52" r="3.5" fill="#333"/><ellipse cx="30" cy="58" rx="5" ry="3" fill="#ffaab9"/><ellipse cx="70" cy="58" rx="5" ry="3" fill="#ffaab9"/><path d="M46 60 Q50 64 54 60" fill="none" stroke="#333" stroke-width="2.5"/></svg>`
+            },
+            {
+                name: "하치와레",
+                bg: "bg-sky-50 border-sky-200 text-sky-700",
+                svg: `<svg viewBox="0 0 100 100" class="w-20 h-20"><ellipse cx="50" cy="55" rx="35" ry="32" fill="#fff" stroke="#333" stroke-width="3"/><path d="M20 45 Q50 30 80 45 Q85 25 68 25 Q50 32 32 25 Q15 25 20 45 Z" fill="#719ec2" stroke="#333" stroke-width="3"/><circle cx="38" cy="54" r="3.5" fill="#333"/><circle cx="62" cy="54" r="3.5" fill="#333"/><ellipse cx="28" cy="59" rx="5" ry="3" fill="#ffaab9"/><ellipse cx="72" cy="59" rx="5" ry="3" fill="#ffaab9"/><path d="M46 62 Q50 66 54 62" fill="none" stroke="#333" stroke-width="2.5"/></svg>`
+            },
+            {
+                name: "우사기",
+                bg: "bg-amber-100 border-amber-300 text-amber-900",
+                svg: `<svg viewBox="0 0 100 100" class="w-20 h-20"><ellipse cx="50" cy="62" rx="32" ry="28" fill="#fff3c4" stroke="#333" stroke-width="3"/><rect x="36" y="10" width="9" height="32" rx="4.5" fill="#fff3c4" stroke="#333" stroke-width="3"/><rect x="55" y="10" width="9" height="32" rx="4.5" fill="#fff3c4" stroke="#333" stroke-width="3"/><rect x="38" y="15" width="5" height="22" rx="2.5" fill="#ffb7ce"/><rect x="57" y="15" width="5" height="22" rx="2.5" fill="#ffb7ce"/><circle cx="38" cy="58" r="3.5" fill="#333"/><circle cx="62" cy="58" r="3.5" fill="#333"/><ellipse cx="28" cy="63" rx="5" ry="3" fill="#ffaab9"/><ellipse cx="72" cy="63" rx="5" ry="3" fill="#ffaab9"/><path d="M46 65 Q50 69 54 65" fill="none" stroke="#333" stroke-width="2.5"/></svg>`
+            },
+            {
+                name: "쿠리만쥬",
+                bg: "bg-stone-100 border-stone-300 text-stone-700",
+                svg: `<svg viewBox="0 0 100 100" class="w-20 h-20"><ellipse cx="50" cy="58" rx="35" ry="30" fill="#fce4c8" stroke="#333" stroke-width="3"/><path d="M20 48 C20 28 80 28 80 48 Z" fill="#8d5b38" stroke="#333" stroke-width="3"/><circle cx="38" cy="56" r="3" fill="#333"/><circle cx="62" cy="56" r="3" fill="#333"/><ellipse cx="28" cy="61" rx="5" ry="3" fill="#ffaab9"/><ellipse cx="72" cy="61" rx="5" ry="3" fill="#ffaab9"/><path d="M47 62 L53 62" stroke="#333" stroke-width="2.5"/><rect x="74" y="52" width="14" height="20" rx="3" fill="#e66045" stroke="#333" stroke-width="2"/></svg>`
+            },
+            {
+                name: "시사",
+                bg: "bg-orange-50 border-orange-200 text-orange-700",
+                svg: `<svg viewBox="0 0 100 100" class="w-20 h-20"><ellipse cx="50" cy="55" rx="33" ry="30" fill="#fff8d6" stroke="#333" stroke-width="3"/><path d="M15 40 Q22 30 25 50 Q18 60 15 40 Z" fill="#e8834a" stroke="#333" stroke-width="2"/><path d="M85 40 Q78 30 75 50 Q82 60 85 40 Z" fill="#e8834a" stroke="#333" stroke-width="2"/><path d="M32 40 Q38 34 44 40" fill="#e8834a" stroke="#333" stroke-width="3"/><path d="M56 40 Q62 34 68 40" fill="#e8834a" stroke="#333" stroke-width="3"/><circle cx="38" cy="52" r="3.5" fill="#333"/><circle cx="62" cy="52" r="3.5" fill="#333"/><ellipse cx="28" cy="57" rx="5" ry="3" fill="#ffaab9"/><ellipse cx="72" cy="57" rx="5" ry="3" fill="#ffaab9"/><path d="M46 59 Q50 63 54 59" fill="none" stroke="#333" stroke-width="2.5"/></svg>`
+            },
+            {
+                name: "랏코",
+                bg: "bg-yellow-50 border-yellow-200 text-yellow-800",
+                svg: `<svg viewBox="0 0 100 100" class="w-20 h-20"><ellipse cx="50" cy="55" rx="35" ry="32" fill="#fff2ce" stroke="#333" stroke-width="3"/><path d="M25 45 L32 35 L35 48" fill="#d8a738" stroke="#333" stroke-width="2"/><circle cx="38" cy="52" r="3.5" fill="#333"/><circle cx="62" cy="52" r="3.5" fill="#333"/><ellipse cx="28" cy="57" rx="5" ry="3" fill="#ffaab9"/><ellipse cx="72" cy="57" rx="5" ry="3" fill="#ffaab9"/><path d="M47 59 Q50 62 53 59" fill="none" stroke="#333" stroke-width="2.5"/><path d="M20 62 Q50 78 80 62 Q80 72 50 82 Q20 72 20 62 Z" fill="#fff" stroke="#333" stroke-width="2.5"/></svg>`
+            },
+            {
+                name: "모몽가",
+                bg: "bg-purple-50 border-purple-200 text-purple-700",
+                svg: `<svg viewBox="0 0 100 100" class="w-20 h-20"><ellipse cx="50" cy="58" rx="34" ry="30" fill="#fff" stroke="#333" stroke-width="3"/><ellipse cx="25" cy="32" rx="10" ry="12" fill="#fff" stroke="#333" stroke-width="3"/><ellipse cx="75" cy="32" rx="10" ry="12" fill="#fff" stroke="#333" stroke-width="3"/><path d="M60 20 C70 5 85 10 80 30 Q70 25 60 20 Z" fill="#9cd5f4" stroke="#333" stroke-width="2.5"/><circle cx="36" cy="54" r="4" fill="#333"/><circle cx="64" cy="54" r="4" fill="#333"/><ellipse cx="26" cy="60" rx="5" ry="3" fill="#ffaab9"/><ellipse cx="74" cy="60" rx="5" ry="3" fill="#ffaab9"/><path d="M46 62 Q50 66 54 62" fill="none" stroke="#333" stroke-width="2.5"/></svg>`
+            },
+            {
+                name: "후루혼야",
+                bg: "bg-rose-50 border-rose-200 text-rose-700",
+                svg: `<svg viewBox="0 0 100 100" class="w-20 h-20"><ellipse cx="50" cy="55" rx="33" ry="30" fill="#ffd1db" stroke="#333" stroke-width="3"/><path d="M22 30 C20 18 35 18 32 32 Z" fill="#ff9ebb" stroke="#333" stroke-width="2.5"/><path d="M78 30 C80 18 65 18 68 32 Z" fill="#ff9ebb" stroke="#333" stroke-width="2.5"/><circle cx="38" cy="52" r="3.5" fill="#333"/><circle cx="62" cy="52" r="3.5" fill="#333"/><ellipse cx="28" cy="57" rx="5" ry="3" fill="#ff8fa3"/><ellipse cx="72" cy="57" rx="5" ry="3" fill="#ff8fa3"/><path d="M46 59 Q50 63 54 59" fill="none" stroke="#333" stroke-width="2.5"/><rect x="35" y="65" width="30" height="20" rx="2" fill="#fff8cb" stroke="#333" stroke-width="2"/></svg>`
+            }
+        ];
+
+        let participants = [];
+
+        const inputField = document.getElementById('participant-input');
+        const listContainer = document.getElementById('participant-list');
+        const matchBtn = document.getElementById('match-btn');
+
+        inputField.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addParticipant();
+            }
+        });
+
+        function addParticipant() {
+            const name = inputField.value.trim();
+            if (!name) return;
+            if (participants.includes(name)) {
+                alert("이미 등록된 이름입니다!");
+                return;
+            }
+
+            participants.push(name);
+            inputField.value = '';
+            renderParticipants();
+        }
+
+        function removeParticipant(index) {
+            participants.splice(index, 1);
+            renderParticipants();
+        }
+
+        function renderParticipants() {
+            listContainer.innerHTML = '';
+            if (participants.length === 0) {
+                listContainer.innerHTML = `<span class="text-slate-400 text-sm">아직 등록된 참가자가 없습니다.</span>`;
+                matchBtn.disabled = true;
+                matchBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                return;
+            }
+
+            participants.forEach((p, idx) => {
+                const tag = document.createElement('div');
+                tag.className = "flex items-center gap-1.5 bg-amber-200 text-amber-900 px-3 py-1.5 rounded-full font-semibold text-sm shadow-sm";
+                tag.innerHTML = `
+                    <span>${p}</span>
+                    <button onclick="removeParticipant(${idx})" class="text-amber-700 hover:text-rose-600 font-bold ml-1 cursor-pointer">×</button>
+                `;
+                listContainer.appendChild(tag);
+            });
+
+            matchBtn.disabled = false;
+            matchBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        function startRouletteReady() {
+            if (participants.length === 0) return;
+
+            document.getElementById('setup-section').classList.add('hidden');
+            document.getElementById('roulette-section').classList.remove('hidden');
+        }
+
+        function spinRoulette() {
+            const spinBtn = document.getElementById('spin-btn');
+            const display = document.getElementById('roulette-display');
+            const resultDiv = document.getElementById('result-display');
+            const winnerBox = document.getElementById('winner-box');
+
+            spinBtn.disabled = true;
+            spinBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            resultDiv.classList.add('hidden');
+
+            let counter = 0;
+            const totalSteps = 25;
+            const interval = setInterval(() => {
+                // 돌릴 때마다 참가자와 캐릭터를 완전히 랜덤하게 매칭하여 보여줌
+                const randomParticipant = participants[Math.floor(Math.random() * participants.length)];
+                const randomCharacter = characters[Math.floor(Math.random() * characters.length)];
+
+                display.innerHTML = `
+                    <div>${randomCharacter.svg}</div>
+                    <span class="text-xs font-bold text-amber-900 mt-1">${randomParticipant} ➔ ${randomCharacter.name}</span>
+                `;
+                counter++;
+
+                if (counter >= totalSteps) {
+                    clearInterval(interval);
+                    
+                    // 최종 당첨자도 완전히 랜덤 추첨
+                    const finalParticipant = participants[Math.floor(Math.random() * participants.length)];
+                    const finalCharacter = characters[Math.floor(Math.random() * characters.length)];
+                    
+                    display.innerHTML = `
+                        <div>${finalCharacter.svg}</div>
+                        <span class="text-sm font-black text-amber-900 mt-1">${finalParticipant} 당첨!</span>
+                    `;
+                    
+                    winnerBox.innerHTML = `
+                        <div>${finalCharacter.svg}</div>
+                        <div class="text-left">
+                            <p class="text-xl font-black text-rose-600">${finalParticipant}</p>
+                            <p class="text-sm text-amber-900 font-bold">당첨 캐릭터: ${finalCharacter.name}</p>
+                        </div>
+                    `;
+                    resultDiv.classList.remove('hidden');
+
+                    spinBtn.disabled = false;
+                    spinBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }, 80);
+        }
+
+        function resetApp() {
+            participants = [];
+            document.getElementById('roulette-section').classList.add('hidden');
+            document.getElementById('setup-section').classList.remove('hidden');
+            document.getElementById('result-display').classList.add('hidden');
+            renderParticipants();
+        }
+    </script>
+</body>
+</html>
